@@ -11,7 +11,6 @@ import java.util.Scanner;
  * container format. This unfortunately requires checks in
  * every operation.
  *
- * TODO: Clean up pad()
  * TODO: Support negative numbers
  * TODO: Return numbers in shortest form (unpad?)
  *
@@ -99,18 +98,20 @@ public class CalculateExactly {
 	 * @param ref Reference number with target pad size
 	 * @return Number padded to have the same size as ref
 	 */
-	public static char[] pad(char[] n, char[] ref) {
-		// Collect information about structure of both numbers
-		int beforeRef = 0;
-		int afterRef = 0;
-		for (int i = 0; i < ref.length; i++) {
-			if (ref[i] == '.') {
-				beforeRef = i;
-				afterRef = ref.length - i - 1;
-				break;
-			}
-		}
+	private static char[] pad(char[] n, char[] ref) {
+		int[] curSize = getNumberSize(n);
+		int[] refSize = getNumberSize(ref);
 
+		// If n is more or equally precise than ref, nothing
+		// needs to be done, ref should be padded to a instead.
+		if (curSize[0] >= refSize[0] && curSize[1] >= refSize[1]) {
+			return n;
+		} else {
+			return zeroPadArray(n, refSize[0] - curSize[0], refSize[1] - curSize[1]);
+		}
+	}
+
+	private static int[] getNumberSize(char[] n) {
 		int before = 0;
 		int after = 0;
 		for (int i = 0; i < n.length; i++) {
@@ -120,41 +121,23 @@ public class CalculateExactly {
 				break;
 			}
 		}
+		return new int[] {before, after};
+	}
 
-		// If n is more precise than ref, nothing needs to be done
-		if (before > beforeRef && after > afterRef) {
-			return n;
-		} else {
-			if (before < beforeRef) {
-				char[] temp = new char[n.length + beforeRef - before];
+	private static char[] zeroPadArray(char[] arr, int before, int after) {
+		char[] temp = new char[arr.length + before + after];
 
-				for (int i = 0; i < temp.length; i++) {
-					if (i < beforeRef - before) {
-						temp[i] = 0;
-					} else {
-						temp[i] = n[i - beforeRef + before];
-					}
-				}
-
-				n = temp;
+		for (int i = 0; i < temp.length; i++) {
+			if (i < before) {
+				temp[i] = 0;
+			} else if (i > before + arr.length - 1) {
+				temp[i] = 0;
+			} else {
+				temp[i] = arr[i - before];
 			}
-
-			if (after < afterRef) {
-				char[] temp = new char[n.length + afterRef - after];
-
-				for (int i = 0; i < temp.length; i++) {
-					if (i >= n.length) {
-						temp[i] = 0;
-					} else {
-						temp[i] = n[i];
-					}
-				}
-
-				n = temp;
-			}
-
-			return n;
 		}
+
+		return temp;
 	}
 
 	/**
@@ -166,6 +149,7 @@ public class CalculateExactly {
 	public static char[] parseString(String str) {
 		str = str.trim();
 
+		// There is no number to parse
 		if (str.length() == 0) throw new NumberFormatException();
 
 		// There is a sign character in the middle of the number
@@ -189,6 +173,10 @@ public class CalculateExactly {
 			else if (c == '.')
 				decimal = true;
 		}
+
+		// If there is a decimal period at the beginning, pad with a zero
+		if (number[0] == '.')
+			number = zeroPadArray(number, 1, 0);
 
 		// Integers are internally represented as real numbers
 		// to reduce edge cases and decrease code complexity.
