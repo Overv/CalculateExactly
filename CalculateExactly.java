@@ -11,6 +11,10 @@ import java.util.Scanner;
  * container format. This unfortunately requires checks in
  * every operation.
  *
+ * TODO: Clean up pad()
+ * TODO: Support negative numbers
+ * TODO: Return numbers in shortest form (unpad?)
+ *
  * @author Alexander Overvoorde
  */
 public class CalculateExactly {
@@ -21,8 +25,10 @@ public class CalculateExactly {
 	 * @return Sum of the two values
 	 */
 	public static char[] add(char[] a, char[] b) {
-		// TODO: Support numbers of different length and negative numbers
+		// TODO: Support numbers of different length
 		// TODO: Check input values for validness (can be integrated in pad function)
+		a = pad(a, b);
+		b = pad(b, a);
 
 		char[] res = new char[a.length];
 		char remainder = 0;
@@ -40,11 +46,19 @@ public class CalculateExactly {
 				res[i] = t;
 			} else {
 				res[i] = (char) (t % 10);
-				remainder = (char) (t - 10);
+				remainder = (char) ((t - res[i]) / 10);
 			}
 		}
 
-		// TODO: Add digit if remainder > 0
+		// Add an extra digit if there is still a remainder
+		if (remainder > 0) {
+			char[] temp = new char[res.length+1];
+			for (int i = 0; i < res.length; i++) {
+				temp[i+1] = res[i];
+			}
+			temp[0] = remainder;
+			res = temp;
+		}
 
 		return res;
 	}
@@ -80,11 +94,80 @@ public class CalculateExactly {
 	}
 
 	/**
+	 * Pads a number with zeroes so that it has the same
+	 * size as another number.
+	 * @param n Number to pad
+	 * @param ref Reference number with target pad size
+	 * @return Number padded to have the same size as ref
+	 */
+	public static char[] pad(char[] n, char[] ref) {
+		// Collect information about structure of both numbers
+		int beforeRef = 0;
+		int afterRef = 0;
+		for (int i = 0; i < ref.length; i++) {
+			if (ref[i] == '.') {
+				beforeRef = i;
+				afterRef = ref.length - i - 1;
+				break;
+			}
+		}
+
+		int before = 0;
+		int after = 0;
+		for (int i = 0; i < n.length; i++) {
+			if (n[i] == '.') {
+				before = i;
+				after = n.length - i - 1;
+				break;
+			}
+		}
+
+		// If n is more precise than ref, nothing needs to be done
+		if (before > beforeRef && after > afterRef) {
+			return n;
+		} else {
+			if (before < beforeRef) {
+				char[] temp = new char[n.length + beforeRef - before];
+
+				for (int i = 0; i < temp.length; i++) {
+					if (i < beforeRef - before) {
+						temp[i] = 0;
+					} else {
+						temp[i] = n[i - beforeRef + before];
+					}
+				}
+
+				n = temp;
+			}
+
+			if (after < afterRef) {
+				char[] temp = new char[n.length + afterRef - after];
+
+				for (int i = 0; i < temp.length; i++) {
+					if (i >= n.length) {
+						temp[i] = 0;
+					} else {
+						temp[i] = n[i];
+					}
+				}
+
+				n = temp;
+			}
+
+			return n;
+		}
+	}
+
+	/**
 	 * Verifies that a string contains a valid real number
 	 * and parses it into a correct char array.
+	 * @param str String representation of a number
+	 * @return Number in internal representation
 	 */
 	public static char[] parseString(String str) {
 		str = str.trim();
+
+		if (str.length() == 0) throw new NumberFormatException();
 
 		// There is a sign character in the middle of the number
 		if (str.lastIndexOf('-') > 0) throw new NumberFormatException();
@@ -96,6 +179,7 @@ public class CalculateExactly {
 
 		// Verify that there are no illegal characters
 		// and convert number digits to actual int values
+		boolean decimal = false;
 		for (int i = 0; i < number.length; i++) {
 			char c = number[i];
 			if ((c < '0' || c > '9') && c != '.' && c != '-')
@@ -103,6 +187,27 @@ public class CalculateExactly {
 
 			if (c >= '0' && c <= '9')
 				number[i] = (char) (c - '0');
+			else if (c == '.')
+				decimal = true;
+		}
+
+		// Integers are internally represented as real numbers
+		// to reduce edge cases and decrease code complexity.
+		// e.g. 3 as input results in 3.0 internally
+		if (!decimal) {
+			char[] temp = new char[number.length+2];
+
+			for (int i = 0; i < temp.length; i++) {
+				if (i < number.length) {
+					temp[i] = number[i];
+				} else if (i == temp.length - 2) {
+					temp[i] = '.';
+				} else {
+					temp[i] = 0;
+				}
+			}
+
+			number = temp;
 		}
 
 		return number;
@@ -111,6 +216,8 @@ public class CalculateExactly {
 	/**
 	 * Converts a number in the internal char array representation
 	 * back to a human-readable string.
+	 * @param n Internal representation of a number
+	 * @return Number in string representation
 	 */
 	public static String toString(char[] n) {
 		char[] t = new char[n.length];
