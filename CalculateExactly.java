@@ -19,7 +19,9 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
+ * TODO: What happens to pad for negative numbers?
  * TODO: Refactor shift functions, they're not very efficient.
+ * 		 Or... rewrite multiply so that it only needs shiftLeft/shiftRight calls...
  *
  * @author Alexander Overvoorde
  */
@@ -137,7 +139,31 @@ public class CalculateExactly {
 	 * @return Product of the two values
 	 */
 	public static char[] multiply(char[] a, char[] b) {
-		return null;
+		if (!check(a) || !check(b)) throw new NumberFormatException();
+
+		a = pad(a, b);
+		b = pad(b, a);
+
+		int sa = sign(a); if (sa < 0) a = negate(a);
+		int sb = sign(b); if (sb < 0) b = negate(b);
+
+		int[] size = getNumberSize(a);
+		char[] res = {0, '.', 0};
+
+		int p = size[0] - 1;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] == '.') continue;
+
+			if (a[i] != 0)
+				res = add(res, multiply(shift(b, p), a[i]));
+
+			p -= 1;
+		}
+
+		if (sa == sb)
+			return res;
+		else
+			return negate(res);
 	}
 
 	/**
@@ -157,6 +183,8 @@ public class CalculateExactly {
 	 * @return n * c
 	 */
 	private static char[] multiply(char[] n, int c) {
+		if (c == 0) return new char[] {0, '.', 0};
+
 		char[] total = n;
 
 		for (int i = 1; i < c; i++) {
