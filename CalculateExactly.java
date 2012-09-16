@@ -18,8 +18,6 @@ import java.util.Scanner;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: toString should return ints when there is only one decimal digit == 0
- * TODO: Implement subtract()
  * TODO: Support negative numbers, affects pad(), reduce(), check() and other functions!
  *
  * @author Alexander Overvoorde
@@ -78,7 +76,35 @@ public class CalculateExactly {
 	 * @return Result of subtracing b from a
 	 */
 	public static char[] subtract(char[] a, char[] b) {
-		return "3.14".toCharArray();
+		if (!check(a) || !check(b)) throw new NumberFormatException();
+
+		a = pad(a, b);
+		b = pad(b, a);
+
+		char[] res = new char[a.length];
+		char remainder = 0;
+
+		for (int i = a.length - 1; i >= 0; i--) {
+			// Sign and period characters are left alone
+			if (a[i] > 9) {
+				res[i] = a[i];
+				continue;
+			}
+
+			// Digits are subtracted from each other
+			byte t = (byte) (a[i] - b[i] - remainder);
+			if (t >= 0) {
+				res[i] = (char) t;
+				remainder = 0;
+			} else {
+				res[i] = (char) (10 + t);
+				remainder = 1;
+			}
+		}
+
+		// TODO: Account for extra remainder when negative numbers are supported
+
+		return reduce(res);
 	}
 
 	/**
@@ -88,7 +114,7 @@ public class CalculateExactly {
 	 * @return Product of the two values
 	 */
 	public static char[] multiply(char[] a, char[] b) {
-		return "3.14".toCharArray();
+		return null;
 	}
 
 	/**
@@ -98,7 +124,7 @@ public class CalculateExactly {
 	 * @return Result of dividing a by b
 	 */
 	public static char[] divide(char[] a, char[] b) {
-		return "3.14".toCharArray();
+		return null;
 	}
 
 	/**
@@ -147,7 +173,7 @@ public class CalculateExactly {
 		if (curSize[0] >= refSize[0] && curSize[1] >= refSize[1]) {
 			return n;
 		} else {
-			return zeroPadArray(n, refSize[0] - curSize[0], refSize[1] - curSize[1]);
+			return zeroPadArray(n, Math.max(0, refSize[0] - curSize[0]), Math.max(0, refSize[1] - curSize[1]));
 		}
 	}
 
