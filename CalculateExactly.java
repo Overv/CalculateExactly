@@ -25,8 +25,6 @@ public class CalculateExactly {
 	 * @return Sum of the two values
 	 */
 	public static char[] add(char[] a, char[] b) {
-		// TODO: Support numbers of different length
-		// TODO: Check input values for validness (can be integrated in pad function)
 		a = pad(a, b);
 		b = pad(b, a);
 
@@ -44,6 +42,7 @@ public class CalculateExactly {
 			char t = (char) (a[i] + b[i] + remainder);
 			if (t < 9) {
 				res[i] = t;
+				remainder = 0;
 			} else {
 				res[i] = (char) (t % 10);
 				remainder = (char) ((t - res[i]) / 10);
