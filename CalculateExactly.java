@@ -39,17 +39,12 @@ public class CalculateExactly {
 	public static char[] add(char[] a, char[] b) {
 		if (!check(a) || !check(b)) throw new NumberFormatException();
 
-		// Additions with negative operands are reinterpreted as
-		// different operations, e.g. 3 + -5 == 3 - 5
+		// Additions with negative operands can sometimes be
+		// reinterpreted as different operations, e.g. 3 + -5 == 3 - 5
 		// -3 + -5 is evaluated as -(3 + 5) with nFlag
-		boolean nFlag = false;
 		if (sign(a) >= 0 && sign(b) < 0) return subtract(a, negate(b));
 		else if (sign(a) < 0 && sign(b) >= 0) return subtract(b, negate(a));
-		else if (sign(a) < 0 && sign(b) < 0) {
-			a = negate(a);
-			b = negate(b);
-			nFlag = true;
-		}
+		else if (sign(a) < 0 && sign(b) < 0) return negate(add(negate(a), negate(b)));
 
 		a = pad(a, b);
 		b = pad(b, a);
@@ -85,11 +80,7 @@ public class CalculateExactly {
 			res = temp;
 		}
 
-		res = reduce(res);
-		if (nFlag)
-			return negate(res);
-		else
-			return res;
+		return reduce(res);
 	}
 
 	/**
@@ -100,6 +91,11 @@ public class CalculateExactly {
 	 */
 	public static char[] subtract(char[] a, char[] b) {
 		if (!check(a) || !check(b)) throw new NumberFormatException();
+
+		// Subtractions with negative operands can sometimes be
+		// reinterpreted as different operations, e.g. 3 - -5 == 3 + 5
+		if (sign(a) >= 0 && sign(b) < 0) return add(a, negate(b));
+		else if (sign(a) < 0 && sign(b) >= 0) return negate(add(negate(a), b));
 
 		a = pad(a, b);
 		b = pad(b, a);
