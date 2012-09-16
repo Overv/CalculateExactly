@@ -20,7 +20,7 @@ import java.util.Scanner;
  *
  * TODO: toString should return ints when there is only one decimal digit == 0
  * TODO: Implement subtract()
- * TODO: Support negative numbers, affects pad(), reduce() and other functions!
+ * TODO: Support negative numbers, affects pad(), reduce(), check() and other functions!
  *
  * @author Alexander Overvoorde
  */
@@ -32,6 +32,8 @@ public class CalculateExactly {
 	 * @return Sum of the two values
 	 */
 	public static char[] add(char[] a, char[] b) {
+		if (!check(a) || !check(b)) throw new NumberFormatException();
+
 		a = pad(a, b);
 		b = pad(b, a);
 
@@ -97,6 +99,36 @@ public class CalculateExactly {
 	 */
 	public static char[] divide(char[] a, char[] b) {
 		return "3.14".toCharArray();
+	}
+
+	/**
+	 * Verifies that the specified array contains a valid
+	 * internal representation of a number.
+	 */
+	private static boolean check(char[] n) {
+		// Smallest valid number is 1.0
+		if (n.length < 3) return false;
+		
+		int periods = 0;
+
+		for (int i = 0; i < n.length; i++) {
+			char c = n[i];
+
+			// Only 0-9 and . are valid values
+			if (c > 9 && c != '.') return false;
+
+			// Decimal periods can not occur at the start or end
+			if (c == '.' && (i == 0 || i == n.length - 1)) return false;
+
+			if (c == '.')
+				periods++;
+		}
+
+		// There must be exactly one decimal period
+		if (periods != 1)
+			return false;
+
+		return true;
 	}
 
 	/**
