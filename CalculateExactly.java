@@ -5,14 +5,21 @@ import java.util.Scanner;
  * arithmetic on real numbers. It also contains a sample
  * application to try out the class.
  *
+ * There is no encapsulated container format. This unfortunately
+ * requires checks in every operation.
+ *
  * Numbers are contained in char[] arrays where digits are
  * stored as integer values 0 - 9 and sign (-) and period (.)
- * characters as their respective ASCII values. There is no
- * container format. This unfortunately requires checks in
- * every operation.
+ * characters as their respective ASCII values. The format
+ * is similar to the human-readable string representation, but
+ * there are a few differences. For example, integers like 5
+ * are always stored as 5.0 to reduce code complexity. Numbers
+ * as operands are also padded to the same size in operations,
+ * but the result is always reduced to the smallest possible
+ * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Support negative numbers
  * TODO: Return numbers in shortest form (unpad?)
+ * TODO: Support negative numbers
  *
  * @author Alexander Overvoorde
  */
@@ -111,6 +118,12 @@ public class CalculateExactly {
 		}
 	}
 
+	/**
+	 * Returns the amount of digits before and after the
+	 * decimal period in the specified number.
+	 * @param n A number
+	 * @return An array with two values, the before and after digit count
+	 */
 	private static int[] getNumberSize(char[] n) {
 		int before = 0;
 		int after = 0;
@@ -124,6 +137,13 @@ public class CalculateExactly {
 		return new int[] {before, after};
 	}
 
+	/**
+	 * Adds the specified amount of zeroes before and after
+	 * the values in an existing array.
+	 * @param arr Array to be padded
+	 * @param before Amount of zeroes to prepend
+	 * @param after Amount of zeroes to append
+	 */
 	private static char[] zeroPadArray(char[] arr, int before, int after) {
 		char[] temp = new char[arr.length + before + after];
 
