@@ -19,7 +19,7 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Support negative numbers, affects pad(), reduce(), check() and other functions!
+ * TODO: Refactor shift functions, they're not very efficient.
  *
  * @author Alexander Overvoorde
  */
@@ -148,6 +148,75 @@ public class CalculateExactly {
 	 */
 	public static char[] divide(char[] a, char[] b) {
 		return null;
+	}
+
+	/**
+	 * Multiplies the specified number by a positive integer.
+	 * @param n Number to multiply
+	 * @param c Integer to multiply by (non-negative)
+	 * @return n * c
+	 */
+	private static char[] multiply(char[] n, int c) {
+		char[] total = n;
+
+		for (int i = 1; i < c; i++) {
+			total = add(total, n);
+		}
+
+		return total;
+	}
+
+	/**
+	 * Shifts a number by a power of 10.
+	 * @param n Number to shift
+	 * @param c Power to shift by (can be negative)
+	 * @return n * 10^c
+	 */
+	private static char[] shift(char[] n, int p) {
+		if (p == 0) return n;
+
+		char[] res = Arrays.copyOf(n, n.length);
+
+		if (p > 0) {
+			for (int i = 0; i < p; i++)
+				res = shiftRight(res);
+		} else {
+			p = -p;
+			for (int i = 0; i < p; i++)
+				res = shiftLeft(res);
+		}
+
+		return res;
+	}
+
+	private static char[] shiftLeft(char[] n) {
+		for (int i = 0; i < n.length; i++) {
+			if (n[i+1] == '.') {
+				n[i+1] = n[i];
+				n[i] = '.';
+				break;
+			}
+		}
+
+		if (n[0] == '.')
+			n = zeroPadArray(n, 1, 0);
+
+		return reduce(n);
+	}
+
+	private static char[] shiftRight(char[] n) {
+		for (int i = 0; i < n.length; i++) {
+			if (n[i] == '.') {
+				n[i] = n[i+1];
+				n[i+1] = '.';
+				break;
+			}
+		}
+
+		if (n[n.length-1] == '.')
+			n = zeroPadArray(n, 0, 1);
+
+		return reduce(n);
 	}
 
 	/**
