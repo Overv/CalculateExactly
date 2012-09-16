@@ -19,7 +19,6 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: What happens to pad for negative numbers?
  * TODO: Refactor shift functions, they're not very efficient.
  * 		 Or... rewrite multiply so that it only needs shiftLeft/shiftRight calls...
  *
@@ -96,7 +95,7 @@ public class CalculateExactly {
 
 		// Subtractions with negative operands can sometimes be
 		// reinterpreted as different operations, e.g. 3 - -5 == 3 + 5
-		if (sign(a) >= 0 && sign(b) < 0) return add(a, negate(b));
+		if (sign(b) < 0) return add(a, negate(b));
 		else if (sign(a) < 0 && sign(b) >= 0) return negate(add(negate(a), b));
 
 		a = pad(a, b);
@@ -379,7 +378,12 @@ public class CalculateExactly {
 			temp[i] = n[i + before];
 		}
 
-		return temp;
+		if (isZero(temp)) {
+			// Prevents -0 from occuring (sign makes no sense)
+			return new char[] {0, '.', 0};
+		} else {
+			return temp;
+		}
 	}
 
 	/**
