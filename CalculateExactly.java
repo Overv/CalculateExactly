@@ -24,6 +24,12 @@ import java.util.Scanner;
  */
 public class CalculateExactly {
 	/**
+	 * This class is not intented to be instantiated as it
+	 * only contains static methods.
+	 */
+	private CalculateExactly() {}
+
+	/**
 	 * Returns the result of adding two real numbers.
 	 * @param a Left-hand value of addition operation
 	 * @param b Right-hand value of addition operation
@@ -130,6 +136,8 @@ public class CalculateExactly {
 	/**
 	 * Verifies that the specified array contains a valid
 	 * internal representation of a number.
+	 * @param n Array to check
+	 * @return true if the array is a valid number, or false if not
 	 */
 	private static boolean check(char[] n) {
 		// Smallest valid number is 1.0
