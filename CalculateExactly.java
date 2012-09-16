@@ -18,8 +18,9 @@ import java.util.Scanner;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Return numbers in shortest form (unpad?)
- * TODO: Support negative numbers
+ * TODO: toString should return ints when there is only one decimal digit == 0
+ * TODO: Implement subtract()
+ * TODO: Support negative numbers, affects pad(), reduce() and other functions!
  *
  * @author Alexander Overvoorde
  */
@@ -65,7 +66,7 @@ public class CalculateExactly {
 			res = temp;
 		}
 
-		return res;
+		return reduce(res);
 	}
 
 	/**
@@ -116,6 +117,37 @@ public class CalculateExactly {
 		} else {
 			return zeroPadArray(n, refSize[0] - curSize[0], refSize[1] - curSize[1]);
 		}
+	}
+
+	/**
+	 * Removes zeroes before and after to reduce a number
+	 * to the smallest possible representation while
+	 * maintaining the precision.
+	 */
+	private static char[] reduce(char[] n) {
+		// The zero in 0.5 should not be removed
+		int before = 0;
+		for (int i = 0; i < n.length; i++)
+			if (n[i] == 0 && n[i+1] != '.')
+				before++;
+			else
+				break;
+
+		// The zero in 1.0 should not be removed either
+		int after = 0;
+		for (int i = n.length - 1; i >= 0; i--)
+			if (n[i] == 0 && n[i-1] != '.')
+				after++;
+			else
+				break;
+
+		// Return new array without them
+		char[] temp = new char[n.length - before - after];
+		for (int i = 0; i < temp.length; i++) {
+			temp[i] = n[i + before];
+		}
+
+		return temp;
 	}
 
 	/**
@@ -237,7 +269,11 @@ public class CalculateExactly {
 			}
 		}
 
-		return new String(t);
+		// Numbers like 1.0 are displayed as 1
+		if (t[t.length-2] == '.' && t[t.length-1] == '0')
+			return new String(t, 0, t.length - 2);
+		else
+			return new String(t);
 	}
 
 	/**
