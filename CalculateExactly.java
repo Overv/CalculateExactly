@@ -121,7 +121,11 @@ public class CalculateExactly {
 			}
 		}
 
-		// TODO: Account for extra remainder (when a - b < 0)
+		// If there is a remainder, that means b > a and the result should be negative
+		// This can be easily handled with the identity a - b = -(b - a)
+		if (remainder != 0) {
+			return negate(subtract(b, a));
+		}
 
 		return reduce(res);
 	}
