@@ -1,5 +1,18 @@
 import java.util.Scanner;
 
+/**
+ * CalculateExactly contains functions for arbitrary precision
+ * arithmetic on real numbers. It also contains a sample
+ * application to try out the class.
+ *
+ * Numbers are contained in char[] arrays where digits are
+ * stored as integer values 0 - 9 and sign (-) and period (.)
+ * characters as their respective ASCII values. There is no
+ * container format. This unfortunately requires checks in
+ * every operation.
+ *
+ * @author Alexander Overvoorde
+ */
 public class CalculateExactly {
 	/**
 	 * Returns the result of adding two real numbers.
@@ -8,7 +21,32 @@ public class CalculateExactly {
 	 * @return Sum of the two values
 	 */
 	public static char[] add(char[] a, char[] b) {
-		return "3.14".toCharArray();
+		// TODO: Support numbers of different length and negative numbers
+		// TODO: Check input values for validness (can be integrated in pad function)
+
+		char[] res = new char[a.length];
+		char remainder = 0;
+
+		for (int i = a.length - 1; i >= 0; i--) {
+			// Sign and period characters are left alone
+			if (a[i] > 9) {
+				res[i] = a[i];
+				continue;
+			}
+
+			// Digits are added onto each other
+			char t = (char) (a[i] + b[i] + remainder);
+			if (t < 9) {
+				res[i] = t;
+			} else {
+				res[i] = (char) (t % 10);
+				remainder = (char) (t - 10);
+			}
+		}
+
+		// TODO: Add digit if remainder > 0
+
+		return res;
 	}
 
 	/**
@@ -57,12 +95,35 @@ public class CalculateExactly {
 		char[] number = str.trim().toCharArray();
 
 		// Verify that there are no illegal characters
-		for (char c : number) {
+		// and convert number digits to actual int values
+		for (int i = 0; i < number.length; i++) {
+			char c = number[i];
 			if ((c < '0' || c > '9') && c != '.' && c != '-')
 				throw new NumberFormatException();
+
+			if (c >= '0' && c <= '9')
+				number[i] = (char) (c - '0');
 		}
 
 		return number;
+	}
+
+	/**
+	 * Converts a number in the internal char array representation
+	 * back to a human-readable string.
+	 */
+	public static String toString(char[] n) {
+		char[] t = new char[n.length];
+
+		for (int i = 0; i < n.length; i++) {
+			if (n[i] > 9) {
+				t[i] = n[i];
+			} else {
+				t[i] = (char) (n[i] + '0');
+			}
+		}
+
+		return new String(t);
 	}
 
 	/**
@@ -110,6 +171,6 @@ public class CalculateExactly {
 				r = divide(a, b);
 				break;
 		}
-		System.out.println(new String(a) + " " + op + " " + new String(b) + " = " + new String(r));
+		System.out.println(toString(a) + " " + op + " " + toString(b) + " = " + toString(r));
 	}
 }
