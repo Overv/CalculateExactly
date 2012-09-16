@@ -1,10 +1,8 @@
-Description
-=======
+##Description
 
 This is a Java university assignment for bonus points, which has provided the specification and demands listed below. Although the interface proposed in the assignment is far from optimal, arbitrary precision arithmetic is a fun challenge nonetheless. A regular implementation would use proper storage classes for encapsulation and a more memory efficient language, like C.
 
-Specification
-=======
+##Specification
 
 The following class should be implemented and used in the target application.
 
@@ -17,16 +15,14 @@ class CalculateExactly {
 }
 ```
 
-Requirements
-=======
+##Requirements
 
 * Support for real numbers with sign of arbitrary length
 * Numbers are input and stored in strings/character arrays
 * Do not make use of non-primitives (e.g. Vectors, Strings)
 * When ran as application, it should ask the user for 2 numbers and one of the 4 operations to be applied to them
 
-License
-=======
+##License
 
 	Copyright (C) 2012 Alexander Overvoorde
 
@@ -36,4 +32,4 @@ License
 
 	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The license is included to prevent fraud in this application while not preventing other people from learning from the code. Please do not use this code in a real application, instead resort to [BigDecimal](http://docs.oracle.com/javase/1.5.0/docs/api/java/math/BigDecimal.html) or the excellent [GMP library](http://gmplib.org/). Note that the implementation of this project is not based on or inspired by the implementation of the aforementioned implementations.
+The license is included to prevent fraud while allowing other people to learn from the code. Please do not use this code in a real application, instead use the [BigDecimal](http://docs.oracle.com/javase/1.5.0/docs/api/java/math/BigDecimal.html) class or the excellent [GMP library](http://gmplib.org/). *Note that the implementation of this project is not based on or inspired by the implementation of the aforementioned implementations.*
