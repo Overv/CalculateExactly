@@ -19,12 +19,12 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Refactor shift functions, they're not very efficient.
- * 		 Or... rewrite multiply so that it only needs shiftLeft/shiftRight calls...
- *
  * @author Alexander Overvoorde
  */
 public class CalculateExactly {
+	public static final char[] ZERO = new char[] {0, '.', 0};
+	public static final char[] ONE = new char[] {1, '.', 0};
+
 	/**
 	 * This class is not intented to be instantiated as it
 	 * only contains static methods.
@@ -147,16 +147,30 @@ public class CalculateExactly {
 		int sb = sign(b); if (sb < 0) b = negate(b);
 
 		int[] size = getNumberSize(a);
-		char[] res = {0, '.', 0};
+		char[] res = ZERO;
 
-		int p = size[0] - 1;
-		for (int i = 0; i < a.length; i++) {
-			if (a[i] == '.') continue;
+		// Multiplication is done in two steps to reduce the
+		// complexity of the shift operations.
 
+		char[] base = Arrays.copyOf(b, b.length);
+		char[] power = Arrays.copyOf(base, base.length);
+
+		// First multiply b by digits before decimal period
+		for (int i = size[0] - 1; i >= 0; i--) {
 			if (a[i] != 0)
-				res = add(res, multiply(shift(b, p), a[i]));
+				res = add(res, multiply(power, a[i]));
 
-			p -= 1;
+			power = shiftRight(power);
+		}
+
+		power = shiftLeft(Arrays.copyOf(base, base.length));
+
+		// Then multiply b by digits after decimal period
+		for (int i = size[0] + 1; i < a.length; i++) {
+			if (a[i] != 0)
+				res = add(res, multiply(power, a[i]));
+
+			power = shiftLeft(power);
 		}
 
 		if (sa == sb)
@@ -182,7 +196,7 @@ public class CalculateExactly {
 	 * @return n * c
 	 */
 	private static char[] multiply(char[] n, int c) {
-		if (c == 0) return new char[] {0, '.', 0};
+		if (c == 0) return ZERO;
 
 		char[] total = n;
 
@@ -194,28 +208,10 @@ public class CalculateExactly {
 	}
 
 	/**
-	 * Shifts a number by a power of 10.
+	 * Shifts the decimal period in a number to the left.
 	 * @param n Number to shift
-	 * @param c Power to shift by (can be negative)
-	 * @return n * 10^c
+	 * @return n / 10
 	 */
-	private static char[] shift(char[] n, int p) {
-		if (p == 0) return n;
-
-		char[] res = Arrays.copyOf(n, n.length);
-
-		if (p > 0) {
-			for (int i = 0; i < p; i++)
-				res = shiftRight(res);
-		} else {
-			p = -p;
-			for (int i = 0; i < p; i++)
-				res = shiftLeft(res);
-		}
-
-		return res;
-	}
-
 	private static char[] shiftLeft(char[] n) {
 		for (int i = 0; i < n.length; i++) {
 			if (n[i+1] == '.') {
@@ -231,6 +227,11 @@ public class CalculateExactly {
 		return reduce(n);
 	}
 
+	/**
+	 * Shifts the decimal period in a number to the right.
+	 * @param n Number to shift
+	 * @return n * 10
+	 */
 	private static char[] shiftRight(char[] n) {
 		for (int i = 0; i < n.length; i++) {
 			if (n[i] == '.') {
@@ -380,7 +381,7 @@ public class CalculateExactly {
 
 		if (isZero(temp)) {
 			// Prevents -0 from occuring (sign makes no sense)
-			return new char[] {0, '.', 0};
+			return ZERO;
 		} else {
 			return temp;
 		}
@@ -495,6 +496,8 @@ public class CalculateExactly {
 	 * @return Number in string representation
 	 */
 	public static String toString(char[] n) {
+		n = reduce(n);
+
 		char[] t = new char[n.length];
 
 		for (int i = 0; i < n.length; i++) {
