@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.Arrays;
 
 /**
  * CalculateExactly contains functions for arbitrary precision
@@ -38,6 +39,18 @@ public class CalculateExactly {
 	public static char[] add(char[] a, char[] b) {
 		if (!check(a) || !check(b)) throw new NumberFormatException();
 
+		// Additions with negative operands are reinterpreted as
+		// different operations, e.g. 3 + -5 == 3 - 5
+		// -3 + -5 is evaluated as -(3 + 5) with nFlag
+		boolean nFlag = false;
+		if (sign(a) >= 0 && sign(b) < 0) return subtract(a, negate(b));
+		else if (sign(a) < 0 && sign(b) >= 0) return subtract(b, negate(a));
+		else if (sign(a) < 0 && sign(b) < 0) {
+			a = negate(a);
+			b = negate(b);
+			nFlag = true;
+		}
+
 		a = pad(a, b);
 		b = pad(b, a);
 
@@ -72,7 +85,11 @@ public class CalculateExactly {
 			res = temp;
 		}
 
-		return reduce(res);
+		res = reduce(res);
+		if (nFlag)
+			return negate(res);
+		else
+			return res;
 	}
 
 	/**
@@ -108,7 +125,7 @@ public class CalculateExactly {
 			}
 		}
 
-		// TODO: Account for extra remainder when negative numbers are supported
+		// TODO: Account for extra remainder (when a - b < 0)
 
 		return reduce(res);
 	}
@@ -148,11 +165,14 @@ public class CalculateExactly {
 		for (int i = 0; i < n.length; i++) {
 			char c = n[i];
 
-			// Only 0-9 and . are valid values
-			if (c > 9 && c != '.') return false;
+			// Only 0-9, . and - are valid values
+			if (c > 9 && c != '.' && c != '-') return false;
 
 			// Decimal periods can not occur at the start or end
 			if (c == '.' && (i == 0 || i == n.length - 1)) return false;
+
+			// Negative sign character can only occur at the start
+			if (c == '-' && i > 0) return false;
 
 			if (c == '.')
 				periods++;
@@ -163,6 +183,55 @@ public class CalculateExactly {
 			return false;
 
 		return true;
+	}
+
+	/**
+	 * Returns the sign of the specified number.
+	 * @param n Number
+	 * @return 0 if n == 0, 1 if n is positive and -1 if n is negative
+	 */
+	private static int sign(char[] n) {
+		if (isZero(n)) {
+			return 0;
+		} else if (n[0] == '-') {
+			return -1;
+		} else {
+			return 1;
+		}
+	}
+
+	/**
+	 * Returns whether the specified number is equal to 0.
+	 * @param n Number
+	 * @return true if n is equal to 0, false otherwise
+	 */
+	private static boolean isZero(char[] n) {
+		for (char c : n)
+			if (c > 0 && c <= 9) return false;
+		return true;
+	}
+
+	/**
+	 * Flips the sign of the specified number.
+	 * @param n Number
+	 * @return -n
+	 */
+	private static char[] negate(char[] n) {
+		if (n[0] == '-') {
+			return Arrays.copyOfRange(n, 1, n.length);
+		} else {
+			char[] temp = new char[n.length+1];
+
+			for (int i = 0; i < temp.length; i++) {
+				if (i == 0) {
+					temp[i] = '-';
+				} else {
+					temp[i] = n[i-1];
+				}
+			}
+
+			return temp;
+		}
 	}
 
 	/**
