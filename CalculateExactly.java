@@ -19,6 +19,9 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
+ * TODO: Make sure functions don't modify input variables if not desired, e.g. shift functions.
+ * TODO: Add limit to division for cases like 1.0/3.0
+ *
  * @author Alexander Overvoorde
  */
 public class CalculateExactly {
@@ -140,9 +143,6 @@ public class CalculateExactly {
 	public static char[] multiply(char[] a, char[] b) {
 		if (!check(a) || !check(b)) throw new NumberFormatException();
 
-		a = pad(a, b);
-		b = pad(b, a);
-
 		int sa = sign(a); if (sa < 0) a = negate(a);
 		int sb = sign(b); if (sb < 0) b = negate(b);
 
@@ -181,12 +181,61 @@ public class CalculateExactly {
 
 	/**
 	 * Returns the result of dividing two real numbers.
+	 * 
 	 * @param a Left-hand value of division operation
 	 * @param b Right-hand value of division operation
 	 * @return Result of dividing a by b
 	 */
 	public static char[] divide(char[] a, char[] b) {
-		return null;
+		if (!check(a) || !check(b)) throw new NumberFormatException();
+
+		int sa = sign(a); if (sa < 0) a = negate(a);
+		int sb = sign(b); if (sb < 0) b = negate(b);
+
+		// Don't modify input values
+		a = Arrays.copyOf(a, a.length);
+		b = Arrays.copyOf(b, b.length);
+
+		// Find largest power p where b * 10^p <= a
+		char[] power = ONE;
+		if (compare(a, b) == 1) {
+			while (compare(a, b) == 1) {
+				b = shiftRight(b);
+				power = shiftRight(power);
+			}
+			// Overshoot compensation should not apply in the special case a * 10^p == b (e.g. 50/5)
+			if (compare(a, b) != 0) {
+				b = shiftLeft(b);
+				power = shiftLeft(power);
+			}
+		} else if (compare(a, b) == -1) {
+			while (compare(a, b) == -1) {
+				b = shiftLeft(b);
+				power = shiftLeft(power);
+			}
+		} else {
+			// shortcut in case |a| == |b|
+			if (sa == sb)
+				return ONE;
+			else
+				return negate(ONE);
+		}
+
+		char[] res = ZERO;
+
+		while (!isZero(a)) {
+			int f = fit(a, b);
+			res = add(res, multiply(power, f));
+			a = subtract(a, multiply(b, f));
+
+			power = shiftLeft(power);
+			b = shiftLeft(b);
+		}
+
+		if (sa == sb)
+			return res;
+		else
+			return negate(res);
 	}
 
 	/**
@@ -205,6 +254,25 @@ public class CalculateExactly {
 		}
 
 		return total;
+	}
+
+	/**
+	 * Returns how many times the specified divisor can fit
+	 * in the given number. This function is not suited for
+	 * values for d significantly (over 10x) larger than n.
+	 * @param n Number to divide
+	 * @param d Devisor
+	 * @return floor(n / d)
+	 */
+	private static int fit(char[] n, char[] d) {
+		int c = 0;
+
+		while(compare(n, d) >= 0) {
+			n = subtract(n, d);
+			c++;
+		}
+
+		return c;
 	}
 
 	/**
