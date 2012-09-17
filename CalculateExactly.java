@@ -19,8 +19,7 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Make sure functions don't modify input variables if not desired, e.g. shift functions.
- * TODO: Add limit to division for cases like 1.0/3.0
+ * TODO: Add limit to division for cases like 1.0/3.0 and 3.14/2.72
  *
  * @author Alexander Overvoorde
  */
@@ -281,6 +280,8 @@ public class CalculateExactly {
 	 * @return n / 10
 	 */
 	private static char[] shiftLeft(char[] n) {
+		n = Arrays.copyOf(n, n.length);
+
 		for (int i = 0; i < n.length; i++) {
 			if (n[i+1] == '.') {
 				n[i+1] = n[i];
@@ -301,6 +302,8 @@ public class CalculateExactly {
 	 * @return n * 10
 	 */
 	private static char[] shiftRight(char[] n) {
+		n = Arrays.copyOf(n, n.length);
+
 		for (int i = 0; i < n.length; i++) {
 			if (n[i] == '.') {
 				n[i] = n[i+1];
