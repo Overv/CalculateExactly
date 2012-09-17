@@ -24,7 +24,9 @@ import java.util.Arrays;
  * limit for the amount of decimals this operation can return. All
  * other operations always use full precision.
  *
- * TODO: Fix precision = 0 always resulting in result 0
+ * TODO: Fix precision and rounding
+ * Test cases: a = 1, b = 101, p = 2 [Expected: 0.01, Got: 0.00]
+ *			   a = 1, b = 3, p = 0 [Expected: 0, Got: Exception]
  *
  * @author Alexander Overvoorde
  */
