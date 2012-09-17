@@ -24,7 +24,7 @@ import java.util.Arrays;
  * limit for the amount of decimals this operation can return. All
  * other operations always use full precision.
  *
- * TODO: Round division results instead of truncating them
+ * TODO: Fix precision = 0 always resulting in result 0
  *
  * @author Alexander Overvoorde
  */
@@ -247,6 +247,13 @@ public class CalculateExactly {
 
 			power = shiftLeft(power);
 			b = shiftLeft(b);
+		}
+
+		// Round final value
+		if (getNumberSize(res)[1] > decimalLimit) {
+			res = Arrays.copyOfRange(res, 0, res.length-1);
+			if (res[res.length-1] >= 5)
+				res = add(res, shiftRight(shiftRight(power)));
 		}
 
 		if (sa == sb)
