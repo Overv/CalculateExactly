@@ -397,7 +397,9 @@ public class CalculateExactly {
 	 * @param n Number
 	 * @return 0 if n == 0, 1 if n is positive and -1 if n is negative
 	 */
-	private static int sign(char[] n) {
+	public static int sign(char[] n) {
+		if (!check(n)) throw new NumberFormatException();
+
 		if (isZero(n)) {
 			return 0;
 		} else if (n[0] == '-') {
@@ -412,7 +414,9 @@ public class CalculateExactly {
 	 * @param n Number
 	 * @return true if n is equal to 0, false otherwise
 	 */
-	private static boolean isZero(char[] n) {
+	public static boolean isZero(char[] n) {
+		if (!check(n)) throw new NumberFormatException();
+
 		for (char c : n)
 			if (c > 0 && c <= 9) return false;
 		return true;
@@ -424,7 +428,9 @@ public class CalculateExactly {
 	 * @param b Number to compare to
 	 * @return 1 if a is larger than b, -1 if a is smaller than b and 0 if they're equal
 	 */
-	private static int compare(char[] a, char[] b) {
+	public static int compare(char[] a, char[] b) {
+		if (!check(a) || !check(b)) throw new NumberFormatException();
+
 		return sign(subtract(a, b));
 	}
 
@@ -433,7 +439,9 @@ public class CalculateExactly {
 	 * @param n Number
 	 * @return -n
 	 */
-	private static char[] negate(char[] n) {
+	public static char[] negate(char[] n) {
+		if (!check(n)) throw new NumberFormatException();
+
 		if (n[0] == '-') {
 			return Arrays.copyOfRange(n, 1, n.length);
 		} else {
