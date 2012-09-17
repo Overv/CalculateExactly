@@ -309,6 +309,16 @@ public class CalculateExactly {
 	}
 
 	/**
+	 * Returns the magnitude of a compared to b.
+	 * @param a Number to compare
+	 * @param b Number to compare to
+	 * @return 1 if a is larger than b, -1 if a is smaller than b and 0 if they're equal
+	 */
+	private static int compare(char[] a, char[] b) {
+		return sign(subtract(a, b));
+	}
+
+	/**
 	 * Flips the sign of the specified number.
 	 * @param n Number
 	 * @return -n
@@ -463,9 +473,11 @@ public class CalculateExactly {
 				decimal = true;
 		}
 
-		// If there is a decimal period at the beginning, pad with a zero
+		// If there is a decimal period at the beginning or end, pad with a zero
 		if (number[0] == '.')
 			number = zeroPadArray(number, 1, 0);
+		if (number[number.length-1] == '.')
+			number = zeroPadArray(number, 0, 1);
 
 		// Integers are internally represented as real numbers
 		// to reduce edge cases and decrease code complexity.
