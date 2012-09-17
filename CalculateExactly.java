@@ -24,7 +24,6 @@ import java.util.Arrays;
  * limit for the amount of decimals this operation can return. All
  * other operations always use full precision.
  *
- * TODO: Catch division by zero
  * TODO: Round division results instead of truncating them
  *
  * @author Alexander Overvoorde
@@ -196,6 +195,8 @@ public class CalculateExactly {
 	public static char[] divide(char[] a, char[] b) {
 		if (!check(a) || !check(b)) throw new NumberFormatException();
 
+		if (isZero(b)) throw new ArithmeticException();
+
 		int sa = sign(a); if (sa < 0) a = negate(a);
 		int sb = sign(b); if (sb < 0) b = negate(b);
 
@@ -236,7 +237,8 @@ public class CalculateExactly {
 		// and tries to fit it in the remainder of a until a is 0
 		// or the decimal limit has been reached.
 		while (!isZero(a)) {
-			if (getNumberSize(res)[1] >= decimalLimit)
+			// Calculate with one extra decimal to correctly round the outcome
+			if (getNumberSize(res)[1] >= Math.max(decimalLimit + 1, 1))
 				break;
 
 			int f = fit(a, b);
@@ -643,8 +645,14 @@ public class CalculateExactly {
 		if (op == '/') {
 			System.out.print("Maximum amount of decimals [default=20]: ");
 			String tmp = scan.nextLine();
-			if (tmp.length() > 0)
-				setDivisionLimit(Integer.valueOf(tmp));
+			if (tmp.length() > 0) {
+				try {
+					setDivisionLimit(Integer.valueOf(tmp));
+				} catch (Exception e) { // IllegalArgumentException + NumberFormatException
+					System.out.println("Invalid precision specified.");
+					return;
+				}
+			}
 		}
 
 		// Ask for operands
@@ -673,7 +681,12 @@ public class CalculateExactly {
 				r = multiply(a, b);
 				break;
 			case '/':
-				r = divide(a, b);
+				try {
+					r = divide(a, b);
+				} catch (ArithmeticException e) {
+					System.out.println("Can't divide by zero.");
+					return;
+				}
 				break;
 		}
 		System.out.println(toString(a) + " " + op + " " + toString(b) + " = " + toString(r));
