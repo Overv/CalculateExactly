@@ -24,10 +24,6 @@ import java.util.Arrays;
  * limit for the amount of decimals this operation can return. All
  * other operations always use full precision.
  *
- * TODO: Fix precision and rounding
- * Test cases: a = 1, b = 101, p = 2 [Expected: 0.01, Got: 0.00]
- *			   a = 1, b = 3, p = 0 [Expected: 0, Got: Exception]
- *
  * @author Alexander Overvoorde
  */
 public class CalculateExactly {
@@ -240,7 +236,7 @@ public class CalculateExactly {
 		// or the decimal limit has been reached.
 		while (!isZero(a)) {
 			// Calculate with one extra decimal to correctly round the outcome
-			if (getNumberSize(res)[1] >= Math.max(decimalLimit + 1, 1))
+			if (getNumberSize(power)[1] > Math.max(decimalLimit + 1, 1))
 				break;
 
 			int f = fit(a, b);
@@ -253,8 +249,13 @@ public class CalculateExactly {
 
 		// Round final value
 		if (getNumberSize(res)[1] > decimalLimit) {
+			char last = res[res.length-1];
+
 			res = Arrays.copyOfRange(res, 0, res.length-1);
-			if (res[res.length-1] >= 5)
+			if (res[res.length-1] == '.')
+				res = zeroPadArray(res, 0, 1);
+
+			if (last >= 5)
 				res = add(res, shiftRight(shiftRight(power)));
 		}
 
