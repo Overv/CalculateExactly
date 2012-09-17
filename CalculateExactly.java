@@ -19,13 +19,21 @@ import java.util.Arrays;
  * but the result is always reduced to the smallest possible
  * representation, i.e. 0.05 + 0.05 will return 0.1 and not 0.10.
  *
- * TODO: Add limit to division for cases like 1.0/3.0 and 3.14/2.72
+ * As there are many operands for which a division operation would
+ * return an infinitely repeating sequence, there is a built-in
+ * limit for the amount of decimals this operation can return. All
+ * other operations always use full precision.
+ *
+ * TODO: Catch division by zero
+ * TODO: Round division results instead of truncating them
  *
  * @author Alexander Overvoorde
  */
 public class CalculateExactly {
 	public static final char[] ZERO = new char[] {0, '.', 0};
 	public static final char[] ONE = new char[] {1, '.', 0};
+
+	private static int decimalLimit = 20;
 
 	/**
 	 * This class is not intented to be instantiated as it
@@ -191,6 +199,8 @@ public class CalculateExactly {
 		int sa = sign(a); if (sa < 0) a = negate(a);
 		int sb = sign(b); if (sb < 0) b = negate(b);
 
+		int decimals = 0;
+
 		// Don't modify input values
 		a = Arrays.copyOf(a, a.length);
 		b = Arrays.copyOf(b, b.length);
@@ -222,7 +232,13 @@ public class CalculateExactly {
 
 		char[] res = ZERO;
 
+		// Every iteration decreases the size of b by a power of 10
+		// and tries to fit it in the remainder of a until a is 0
+		// or the decimal limit has been reached.
 		while (!isZero(a)) {
+			if (getNumberSize(res)[1] >= decimalLimit)
+				break;
+
 			int f = fit(a, b);
 			res = add(res, multiply(power, f));
 			a = subtract(a, multiply(b, f));
@@ -235,6 +251,17 @@ public class CalculateExactly {
 			return res;
 		else
 			return negate(res);
+	}
+
+	/**
+	 * Set the maximum amount of decimals a divide
+	 * operation can return.
+	 * @param decimals Decimal limit, must be >= 0
+	 */
+	public static void setDivisionLimit(int decimals) {
+		if (decimals < 0) throw new IllegalArgumentException();
+
+		decimalLimit = decimals;
 	}
 
 	/**
@@ -613,6 +640,12 @@ public class CalculateExactly {
 			return;
 		}
 		char op = t.charAt(0);
+		if (op == '/') {
+			System.out.print("Maximum amount of decimals [default=20]: ");
+			String tmp = scan.nextLine();
+			if (tmp.length() > 0)
+				setDivisionLimit(Integer.valueOf(tmp));
+		}
 
 		// Ask for operands
 		char[] a = null;
